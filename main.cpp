@@ -12,13 +12,13 @@ private:
 	uint16_t next_code;
 
 public:
-	void initEncoderTable();
-	void initDecoderTable();
+	void buildEncoderTable();
+	void buildDecoderTable();
 	vector<uint16_t> encode(string &);
 	string decode(vector<uint16_t> &);
 };
 
-void LZW::initEncoderTable()
+void LZW::buildEncoderTable()
 {
 	code_table.clear();
 	for (uint16_t i = 0; i < 256; i++)
@@ -30,7 +30,7 @@ void LZW::initEncoderTable()
 	next_code = 256;
 }
 
-void LZW::initDecoderTable()
+void LZW::buildDecoderTable()
 {
 	string_table.clear();
 	for (int i = 0; i < 256; i++)
@@ -47,12 +47,15 @@ vector<uint16_t> LZW::encode(string &input)
 	vector<uint16_t> encoded;
 	string current_string = "";
 
-	initEncoderTable();
+	buildEncoderTable();
 	for (char c : input)
 	{
 		current_string = current_string + c;
 		if (code_table.find(current_string) == code_table.end())
 		{
+			if (next_code == UINT16_MAX)
+				buildEncoderTable();
+
 			code_table[current_string] = next_code++;
 			current_string.pop_back();
 			encoded.push_back(code_table[current_string]);
@@ -68,14 +71,18 @@ string LZW::decode(vector<uint16_t> &input)
 	string decoded = "";
 	string prev = "";
 
-	initDecoderTable();
+	buildDecoderTable();
 	for (uint16_t c : input)
 	{
 		if (string_table.find(c) == string_table.end())
 			string_table[c] = prev + prev[0];
+
 		decoded = decoded + string_table[c];
 		if (!prev.empty())
 		{
+			if (next_code == UINT16_MAX)
+				buildDecoderTable();
+
 			string_table[next_code++] = prev + string_table[c][0];
 		}
 		prev = string_table[c];
@@ -93,7 +100,9 @@ int main()
 
 	for (uint16_t code : (encoded))
 		cout << ((code < 256) ? string(1, char(code)) : to_string(code));
+
 	if (compressor.decode(encoded) == input)
 		cout << "\nstring decoded successfully\n";
+
 	return 0;
 }

@@ -4,70 +4,96 @@
 #include <string>
 using namespace std;
 
-vector<uint16_t> compress(string input)
+class LZW
 {
-	vector<uint16_t> res;
-	unordered_map<string, uint16_t> encoding;
-	uint16_t next_code = 256;
-	string current_string = "";
+private:
+	unordered_map<string, uint16_t> code_table;
+	unordered_map<uint16_t, string> string_table;
+	uint16_t next_code;
 
+public:
+	void initEncoderTable();
+	void initDecoderTable();
+	vector<uint16_t> encode(string &);
+	string decode(vector<uint16_t> &);
+};
+
+void LZW::initEncoderTable()
+{
+	code_table.clear();
 	for (uint16_t i = 0; i < 256; i++)
 	{
 		string ch = "";
 		ch += char(i);
-		encoding[ch] = i;
+		code_table[ch] = i;
 	}
-
-	for (char c : input)
-	{
-		current_string = current_string + c;
-		if (encoding.find(current_string) == encoding.end())
-		{
-			encoding[current_string] = next_code++;
-			current_string.pop_back();
-			res.push_back(encoding[current_string]);
-			current_string = c;
-		}
-	}
-	res.push_back(encoding[current_string]);
-
-	return res;
+	next_code = 256;
 }
 
-string decompress(vector<uint16_t> input)
+void LZW::initDecoderTable()
 {
-	string res;
-	unordered_map<uint16_t, string> encoding;
-	uint16_t next_code = 256;
-	string prev = "";
-
+	string_table.clear();
 	for (int i = 0; i < 256; i++)
 	{
 		string ch = "";
 		ch += char(i);
-		encoding[i] = ch;
+		string_table[i] = ch;
 	}
+	next_code = 256;
+}
 
+vector<uint16_t> LZW::encode(string &input)
+{
+	vector<uint16_t> encoded;
+	string current_string = "";
+
+	initEncoderTable();
+	for (char c : input)
+	{
+		current_string = current_string + c;
+		if (code_table.find(current_string) == code_table.end())
+		{
+			code_table[current_string] = next_code++;
+			current_string.pop_back();
+			encoded.push_back(code_table[current_string]);
+			current_string = c;
+		}
+	}
+	encoded.push_back(code_table[current_string]);
+	return encoded;
+}
+
+string LZW::decode(vector<uint16_t> &input)
+{
+	string decoded = "";
+	string prev = "";
+
+	initDecoderTable();
 	for (uint16_t c : input)
 	{
-		if (encoding.find(c) == encoding.end())
-			encoding[c] = prev + prev[0];
-		res = res + encoding[c];
+		if (string_table.find(c) == string_table.end())
+			string_table[c] = prev + prev[0];
+		decoded = decoded + string_table[c];
 		if (!prev.empty())
 		{
-			encoding[next_code++] = prev + encoding[c][0];
+			string_table[next_code++] = prev + string_table[c][0];
 		}
-		prev = encoding[c];
+		prev = string_table[c];
 	}
-
-	return res;
+	return decoded;
 }
 
 int main()
 {
-	string in;
-	in = "hello there how are you, I am fine over here";
-	for (uint16_t code : compress(in))
+	ios::sync_with_stdio(false);
+
+	LZW compressor;
+	string input = "hello there how are you, I am fine over here";
+	vector<uint16_t> encoded = compressor.encode(input);
+
+	for (uint16_t code : (encoded))
 		cout << ((code < 256) ? string(1, char(code)) : to_string(code));
+	if (compressor.decode(encoded) == input)
+		cout << "\nstring decoded successfully\n";
 	return 0;
 }

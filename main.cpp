@@ -1,8 +1,13 @@
+/**
+ * main.cpp
+ * This file is used for demoing the lzw algorithm to compress and decompress files.
+ */
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include "LZW.hpp"
 
+// Takes in inputs and encode/decode the user provided file
 int main()
 {
 	ios::sync_with_stdio(false);

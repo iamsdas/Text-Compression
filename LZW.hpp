@@ -1,8 +1,13 @@
+/**
+ * LZW.hpp
+ * This is a header file containing the definitions for the LZW class and its functions.
+ */
 #include <unordered_map>
 #include <vector>
 #include <string>
 using namespace std;
 
+// The LZW encoder/decoder class
 class LZW
 {
 private:

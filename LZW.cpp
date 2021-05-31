@@ -1,5 +1,10 @@
+/**
+ * LZW.cpp
+ * This file contains the implementation of the LZW class
+ */
 #include "LZW.hpp"
 
+// builds the encoder table of the LZW class
 void LZW::buildEncoderTable()
 {
 	code_table.clear();
@@ -12,6 +17,7 @@ void LZW::buildEncoderTable()
 	next_code = 256;
 }
 
+// builds the decoder table of the LZW class
 void LZW::buildDecoderTable()
 {
 	string_table.clear();
@@ -24,6 +30,7 @@ void LZW::buildDecoderTable()
 	next_code = 256;
 }
 
+// encodes string to a compressed vector datatype
 vector<uint16_t> LZW::encode(string &input)
 {
 	vector<uint16_t> encoded;
@@ -48,6 +55,7 @@ vector<uint16_t> LZW::encode(string &input)
 	return encoded;
 }
 
+// decodes a compressed vector to standard string datatype
 string LZW::decode(vector<uint16_t> &input)
 {
 	string decoded = "";
